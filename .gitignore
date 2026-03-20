@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+.env.*
+
+# Build Outputs
+dist/
+build/
+
+# Application Uploads
+uploads/
+
+# Test/Scratch Files
+test.txt
+test-upload.mjs
+test-upload.js
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
