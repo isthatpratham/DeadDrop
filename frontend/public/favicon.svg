@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="DeadDrop favicon">
+	<defs>
+		<linearGradient id="bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#090b17"/>
+			<stop offset="0.55" stop-color="#12162b"/>
+			<stop offset="1" stop-color="#23133f"/>
+		</linearGradient>
+		<linearGradient id="accent" x1="156" y1="180" x2="356" y2="352" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#8d5bff"/>
+			<stop offset="1" stop-color="#4f80ff"/>
+		</linearGradient>
+	</defs>
+
+	<rect x="24" y="24" width="464" height="464" rx="116" fill="url(#bg)"/>
+	<rect x="24" y="24" width="464" height="464" rx="116" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="8"/>
+
+	<path d="M136 190c0-14.36 11.64-26 26-26h188c14.36 0 26 11.64 26 26v130c0 14.36-11.64 26-26 26H162c-14.36 0-26-11.64-26-26V190z" fill="#0f1326" stroke="#d0d8ff" stroke-opacity="0.42" stroke-width="14"/>
+	<path d="M145 191l111 86 111-86" fill="none" stroke="url(#accent)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+
+	<g transform="translate(0 6)">
+		<rect x="211" y="240" width="90" height="88" rx="18" fill="#eef2ff"/>
+		<path d="M232 240v-18c0-25.4 20.6-46 46-46s46 20.6 46 46v18" fill="none" stroke="#eef2ff" stroke-width="18" stroke-linecap="round"/>
+		<circle cx="256" cy="282" r="10" fill="#1a2040"/>
+		<rect x="251" y="281" width="10" height="22" rx="5" fill="#1a2040"/>
+	</g>
+</svg>

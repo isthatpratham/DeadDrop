@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-gray-900 bg-background;
+    background-image: radial-gradient(circle at 15% 50%, rgba(200, 180, 160, 0.2), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(220, 200, 190, 0.4), transparent 25%);
+  }
+}
+
+.shadow-glass {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.shadow-glass-hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}

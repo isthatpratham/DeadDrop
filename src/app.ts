@@ -9,7 +9,9 @@ const app: Application = express();
 
 // Middlewares
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  exposedHeaders: ['Content-Disposition'],
+}));
 
 // Routes
 app.use('/api', fileRoutes);

@@ -1,17 +1,17 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { initializeSqlite, getSqlitePath } from '../../backend/database/sqlite-setup.js';
 
 dotenv.config();
 
 const connectDB = async (): Promise<void> => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/deaddrop');
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    initializeSqlite();
+    console.log(`SQLite Connected: ${getSqlitePath()}`);
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`Error: ${error.message}`);
+      console.error(`SQLite connection error: ${error.message}`);
     } else {
-      console.error('An unknown error occurred during database connection');
+      console.error('An unknown error occurred during SQLite connection');
     }
     process.exit(1);
   }

@@ -1,7 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import bcrypt from 'bcrypt';
-
-export interface IFile extends Document {
+export interface IFile {
+  id: string;
   originalName: string;
   storedName: string;
   path: string;
@@ -13,60 +11,43 @@ export interface IFile extends Document {
   createdAt: Date;
 }
 
-const fileSchema = new Schema<IFile>(
-  {
-    originalName: {
-      type: String,
-      required: true,
-    },
-    storedName: {
-      type: String,
-      required: true,
-    },
-    path: {
-      type: String,
-      required: true,
-    },
-    size: {
-      type: Number,
-      required: true,
-    },
-    expiresAt: {
-      type: Date,
-      required: true,
-    },
-    maxDownloads: {
-      type: Number,
-      default: 1,
-    },
-    downloadCount: {
-      type: Number,
-      default: 0,
-    },
-    password: {
-      type: String,
-    },
-  },
-  {
-    timestamps: {
-      createdAt: true,
-      updatedAt: false,
-    },
-  }
-);
+export type SqliteFileRow = {
+  id: string;
+  original_name: string;
+  stored_name: string;
+  file_path: string;
+  size: number;
+  expires_at: string;
+  max_downloads: number;
+  download_count: number;
+  password_hash: string | null;
+  created_at: string;
+};
 
-// Hash password before saving if it is present and modified
-fileSchema.pre('save', async function () {
-  if (!this.isModified('password') || !this.password) {
-    return;
-  }
+export const CREATE_FILES_TABLE_SQL = `
+  CREATE TABLE IF NOT EXISTS files (
+    id TEXT PRIMARY KEY,
+    original_name TEXT NOT NULL,
+    stored_name TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    expires_at TEXT NOT NULL,
+    max_downloads INTEGER NOT NULL DEFAULT 1,
+    download_count INTEGER NOT NULL DEFAULT 0,
+    password_hash TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`;
 
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-  } catch (error) {
-    throw error;
-  }
+export const toIFile = (row: SqliteFileRow): IFile => ({
+  id: row.id,
+  originalName: row.original_name,
+  storedName: row.stored_name,
+  path: row.file_path,
+  size: row.size,
+  expiresAt: new Date(row.expires_at),
+  maxDownloads: row.max_downloads,
+  downloadCount: row.download_count,
+  password: row.password_hash ?? undefined,
+  createdAt: new Date(row.created_at),
 });
-
-export const File = mongoose.model<IFile>('File', fileSchema);

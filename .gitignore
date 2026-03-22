@@ -12,6 +12,12 @@ build/
 # Application Uploads
 uploads/
 
+# SQLite Database Files
+backend/database/*.db
+backend/database/*.db-journal
+backend/database/*.db-wal
+backend/database/*.db-shm
+
 # Test/Scratch Files
 test.txt
 test-upload.mjs
