@@ -167,4 +167,4 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## 👤 Author
 Pratham
-- GitHub: https://github.com/isthatpratham
+- GitHub: https://github.com/isthatpratham - Star the repo.
