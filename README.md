@@ -1,4 +1,4 @@
-# DeadDrop
+# DeadDrop.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)
