@@ -6,7 +6,7 @@
 ![Backend](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-000000?logo=express&logoColor=white)
 
 ## 📝 Description
-DeadDrop is a secure, anonymous file drop platform for sharing files with expiring, self-destructing links. Files can be protected with passwords, limited by download count, and automatically cleaned up after expiration. The project uses a React frontend and a TypeScript + Express backend with SQLite for zero external database setup.
+DeadDrop is a secure & anonymous file drop platform for sharing files with expiring, self-destructing links. Files can be protected with passwords, limited by download count, and automatically cleaned up after expiration. The project uses a React frontend and a TypeScript + Express backend with SQLite for zero external database setup.
 
 ## ✨ Features
 - Anonymous file sharing with generated unique download links
