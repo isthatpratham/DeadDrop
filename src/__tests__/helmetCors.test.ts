@@ -39,6 +39,7 @@ describe('Helmet and CORS', () => {
 
     expect(res.headers['access-control-allow-origin']).toBe('http://localhost:5173');
     expect(res.headers['access-control-expose-headers']?.toLowerCase()).toContain('content-disposition');
+    expect(res.headers['access-control-expose-headers']?.toLowerCase()).toContain('x-request-id');
   });
 
   it('does not allow an unlisted origin', async () => {

@@ -3,6 +3,7 @@ import app from './app.js';
 import connectDB from './config/db.js';
 import { startCleanupJob, stopCleanupJob } from './services/cleanupService.js';
 import { closeSqlite } from '../backend/database/sqlite-setup.js';
+import { log } from './utils/logger.js';
 
 dotenv.config();
 
@@ -15,22 +16,19 @@ connectDB();
 startCleanupJob();
 
 const server = app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  log('info', { event: 'startup', message: `listening on ${PORT}` });
 });
 
 export const gracefulShutdown = (signal: string, callback?: () => void) => {
-  console.log(`Received ${signal}. Initiating graceful shutdown...`);
+  log('info', { event: 'shutdown', signal });
 
   stopCleanupJob();
 
   server.close(() => {
-    console.log('HTTP server closed.');
-
     try {
       closeSqlite();
-      console.log('SQLite connection closed.');
-    } catch (err) {
-      console.error('Error closing SQLite database:', err);
+    } catch {
+      log('error', { event: 'shutdown', signal, message: 'sqlite_close_failed' });
     }
 
     if (callback) {
@@ -41,7 +39,7 @@ export const gracefulShutdown = (signal: string, callback?: () => void) => {
   });
 
   setTimeout(() => {
-    console.error('Forcefully shutting down server due to timeout.');
+    log('error', { event: 'shutdown', signal, message: 'timeout' });
     if (!callback) {
       process.exit(1);
     }

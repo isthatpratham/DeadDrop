@@ -1,18 +1,15 @@
 import dotenv from 'dotenv';
-import { initializeSqlite, getSqlitePath } from '../../backend/database/sqlite-setup.js';
+import { initializeSqlite } from '../../backend/database/sqlite-setup.js';
+import { log } from '../utils/logger.js';
 
 dotenv.config();
 
 const connectDB = async (): Promise<void> => {
   try {
     initializeSqlite();
-    console.log(`SQLite Connected: ${getSqlitePath()}`);
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(`SQLite connection error: ${error.message}`);
-    } else {
-      console.error('An unknown error occurred during SQLite connection');
-    }
+    log('info', { event: 'startup', message: 'sqlite_ready' });
+  } catch {
+    log('error', { event: 'startup', message: 'sqlite_failed' });
     process.exit(1);
   }
 };
