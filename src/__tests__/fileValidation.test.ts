@@ -14,7 +14,11 @@ describe('Magic-Byte & File Validation Security', () => {
 
   afterAll(() => {
     if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
+      try {
+        fs.rmSync(testDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+      } catch {
+        // Ignore cleanup error if Windows locks dir
+      }
     }
   });
 
