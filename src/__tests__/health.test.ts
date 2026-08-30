@@ -53,6 +53,15 @@ describe('Health and readiness endpoints', () => {
     expect(compose).not.toMatch(/healthcheck:[\s\S]*\/api\/health/);
   });
 
+  it('does not install a compiler toolchain in the runtime image', () => {
+    const dockerfile = fs.readFileSync(path.resolve(process.cwd(), 'Dockerfile'), 'utf8');
+    const runner = dockerfile.split('AS runner')[1] ?? '';
+
+    expect(runner).toContain('gosu');
+    expect(runner).toContain('COPY --from=prod-deps');
+    expect(runner).not.toMatch(/python3|g\+\+|make /);
+  });
+
   it('GET /api/health still succeeds when SQLite is closed', async () => {
     closeSqlite();
 
