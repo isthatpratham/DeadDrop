@@ -139,7 +139,7 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
     }
 
     if (file.password_hash) {
-      const providedPassword = req.query.password as string;
+      const providedPassword = typeof req.body?.password === 'string' ? req.body.password : '';
       if (!providedPassword) {
         res.status(403).json({ success: false, message: 'Password required' });
         return;
