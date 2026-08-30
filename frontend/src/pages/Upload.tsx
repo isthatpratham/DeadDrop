@@ -1,7 +1,7 @@
 import { useState, useRef, type ChangeEvent, type DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, File, X, Lock, Clock, DownloadCloud } from 'lucide-react';
+import { UploadCloud, File, X, Clock } from 'lucide-react';
 import { GlassContainer } from '../components/GlassContainer';
 import { GlassCard } from '../components/GlassCard';
 import { GlassInput } from '../components/GlassInput';
@@ -128,7 +128,10 @@ export function Upload() {
           </div>
 
           <div
-            className={`relative w-full h-56 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer overflow-hidden ${isDragging
+            role="button"
+            tabIndex={0}
+            aria-label={file ? `Selected file ${file.name}. Activate to choose a different file.` : 'Choose a file to upload'}
+            className={`relative w-full h-56 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 ${isDragging
               ? 'border-gray-800 bg-white/40 shadow-inner scale-[1.02]'
               : 'border-white/50 bg-white/20 hover:bg-white/40 hover:border-white/80'
               }`}
@@ -136,8 +139,14 @@ export function Upload() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
           >
-            <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+            <input id="file-upload" type="file" className="sr-only" ref={fileInputRef} onChange={handleFileChange} />
             <AnimatePresence mode="wait">
               {!file ? (
                 <motion.div
@@ -170,8 +179,10 @@ export function Upload() {
                   <p className="text-sm text-gray-600 mt-1 font-medium">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
 
                   <button
+                    type="button"
+                    aria-label="Remove selected file"
                     onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                    className="absolute top-4 right-4 p-2 bg-black/5 hover:bg-black/10 hover:rotate-90 rounded-full transition-all duration-300"
+                    className="absolute top-4 right-4 min-h-11 min-w-11 flex items-center justify-center bg-black/5 hover:bg-black/10 hover:rotate-90 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30"
                   >
                     <X className="w-5 h-5 text-gray-700" />
                   </button>
@@ -182,13 +193,14 @@ export function Upload() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
             <div className="flex flex-col gap-2 relative">
-              <label className="text-sm font-semibold text-gray-700 ml-1 flex items-center gap-1.5">
+              <label htmlFor="expiry-select" className="text-sm font-semibold text-gray-700 ml-1 flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-gray-500" /> Expiry Time
               </label>
               <select
+                id="expiry-select"
                 value={expiry}
                 onChange={e => setExpiry(e.target.value)}
-                className="w-full rounded-xl border border-white/30 bg-white/40 backdrop-blur-md px-4 py-3.5 text-gray-800 shadow-glass transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 appearance-none font-medium cursor-pointer"
+                className="w-full rounded-xl border border-white/30 bg-white/40 backdrop-blur-md px-4 py-3.5 text-gray-800 shadow-glass transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30 appearance-none font-medium cursor-pointer"
               >
                 <option value="60">1 Hour (Burn after reading)</option>
                 <option value="1440">24 Hours</option>
@@ -197,10 +209,9 @@ export function Upload() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-gray-700 ml-1 flex items-center gap-1.5">
-                <DownloadCloud className="w-4 h-4 text-gray-500" /> Max Downloads
-              </label>
               <GlassInput
+                id="max-downloads"
+                label="Max Downloads"
                 type="number"
                 min="1"
                 max="100"
@@ -212,10 +223,9 @@ export function Upload() {
             </div>
 
             <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-sm font-semibold text-gray-700 ml-1 flex items-center gap-1.5">
-                <Lock className="w-4 h-4 text-gray-500" /> Secure Password <span className="text-gray-400 font-normal ml-1">(Optional)</span>
-              </label>
               <GlassInput
+                id="optional-password"
+                label="Optional password"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -225,7 +235,7 @@ export function Upload() {
             </div>
           </div>
 
-          {errorStatus && <p className="text-red-600 text-center font-semibold mt-2">{errorStatus}</p>}
+          {errorStatus && <p role="alert" className="text-red-600 text-center font-semibold mt-2">{errorStatus}</p>}
 
           <div className="mt-2 flex flex-col gap-4">
             <AnimatePresence>
@@ -247,6 +257,7 @@ export function Upload() {
 
             <GlassButton
               variant="secondary"
+              aria-busy={isUploading}
               className={`w-full py-4 text-lg font-semibold shadow-xl transition-all duration-300 ${!file || isUploading ? 'opacity-50 cursor-not-allowed transform-none' : 'hover:shadow-2xl hover:-translate-y-1'
                 }`}
               onClick={handleUpload}

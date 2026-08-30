@@ -195,6 +195,8 @@ export function Download() {
             </p>
             <div className="w-full max-w-sm flex flex-col gap-4">
               <GlassInput
+                id="download-password"
+                label="Password"
                 type="password"
                 placeholder="Enter password"
                 value={password}
@@ -207,6 +209,7 @@ export function Download() {
               <GlassButton
                 onClick={handleUnlock}
                 disabled={isDownloading}
+                aria-busy={isDownloading}
                 className="w-full flex items-center justify-center gap-2"
               >
                 {isDownloading ? 'Downloading...' : <><KeyRound className="w-4 h-4" /> Unlock and download</>}
@@ -269,6 +272,7 @@ export function Download() {
                 variant="secondary"
                 onClick={executeDownload}
                 disabled={isDownloading}
+                aria-busy={isDownloading}
                 className={`w-full py-5 text-lg font-bold flex items-center justify-center gap-3 transition-all duration-300 shadow-xl ${
                   isDownloading ? 'bg-black/40 cursor-wait transform-none' : 'hover:-translate-y-1 hover:shadow-2xl'
                 }`}
