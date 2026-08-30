@@ -17,8 +17,21 @@ describe('request IDs', () => {
     expect(res.headers['x-request-id']).toBe('client-trace-123');
   });
 
-  it('strips newlines from an incoming request id', () => {
-    expect(resolveRequestId('abc\n{"injected":true}')).toBe('abc{"injected":true}');
+  it('replaces malicious or malformed request ids instead of echoing them', () => {
+    expect(resolveRequestId('abc\n{"injected":true}')).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    );
+    expect(resolveRequestId('<script>alert(1)</script>')).not.toContain('<');
+    expect(resolveRequestId('has space')).not.toBe('has space');
+    expect(resolveRequestId('ok_trace.1-2')).toBe('ok_trace.1-2');
+  });
+
+  it('does not reflect an injected request id on the response', async () => {
+    const res = await request(app).get('/api/health').set('X-Request-Id', '{"injected":true}');
+    expect(res.headers['x-request-id']).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    );
+    expect(res.headers['x-request-id']).not.toContain('{');
   });
 });
 
