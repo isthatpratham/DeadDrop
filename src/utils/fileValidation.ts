@@ -12,7 +12,7 @@ export const validateFileMagicBytes = (filePath: string, claimedMimeType: string
 
   const fileStats = fs.statSync(filePath);
   if (fileStats.size === 0) {
-    return { valid: true };
+    return { valid: false, message: 'Empty files are not allowed' };
   }
 
   const bufferSize = Math.min(4096, fileStats.size);

@@ -6,6 +6,13 @@ import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { formatContentDisposition } from '../utils/disposition.js';
 import { validateFileMagicBytes } from '../utils/fileValidation.js';
+import { parseExpiryMinutes, parseMaxDownloads } from '../utils/uploadConstraints.js';
+
+const removeUploadedFile = (filePath?: string): void => {
+  if (filePath && fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+};
 
 type SqliteFileRow = {
   id: string;
@@ -29,25 +36,29 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    const expiry = parseExpiryMinutes(req.body.expiryMinutes || req.body.expiry);
+    if (!expiry.ok) {
+      removeUploadedFile(req.file.path);
+      res.status(400).json({ success: false, message: expiry.message });
+      return;
+    }
+
+    const downloads = parseMaxDownloads(req.body.maxDownloads);
+    if (!downloads.ok) {
+      removeUploadedFile(req.file.path);
+      res.status(400).json({ success: false, message: downloads.message });
+      return;
+    }
+
     const validation = validateFileMagicBytes(req.file.path, req.file.mimetype);
     if (!validation.valid) {
-      if (fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
+      removeUploadedFile(req.file.path);
       res.status(400).json({ success: false, message: validation.message || 'Invalid file content' });
       return;
     }
 
-    const expiryRaw = req.body.expiryMinutes || req.body.expiry;
-    const expiryTimeInMinutes = parseInt(expiryRaw, 10);
-    if (isNaN(expiryTimeInMinutes) || expiryTimeInMinutes <= 0) {
-      res.status(400).json({ success: false, message: 'Invalid expiry time' });
-      return;
-    }
-
-    const expiresAt = new Date(Date.now() + expiryTimeInMinutes * 60 * 1000);
-
-    const maxDownloads = req.body.maxDownloads ? parseInt(req.body.maxDownloads, 10) : 1;
+    const expiresAt = new Date(Date.now() + expiry.value * 60 * 1000);
+    const maxDownloads = downloads.value;
     const fileId = uuidv4();
     const passwordHash = req.body.password ? await bcrypt.hash(req.body.password, 10) : null;
 
@@ -83,12 +94,9 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
       fileId,
       downloadLink: `/api/download/${fileId}`,
     });
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ success: false, message: error.message });
-    } else {
-      res.status(500).json({ success: false, message: 'An unknown error occurred' });
-    }
+  } catch {
+    removeUploadedFile(req.file?.path);
+    res.status(500).json({ success: false, message: 'An unknown error occurred' });
   }
 };
 export const downloadFile = async (req: Request, res: Response): Promise<void> => {

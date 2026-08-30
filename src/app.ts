@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import fileRoutes from './routes/fileRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
 
@@ -58,5 +59,7 @@ if (fs.existsSync(frontendDistPath)) {
     res.send('API running');
   });
 }
+
+app.use(errorHandler);
 
 export default app;
