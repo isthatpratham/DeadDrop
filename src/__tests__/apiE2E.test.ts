@@ -90,13 +90,22 @@ describe('Comprehensive E2E API Integration Test Suite', () => {
     expect(noPassRes.status).toBe(403);
     expect(noPassRes.body.message).toContain('Password required');
 
+    // Query-string password must no longer unlock the file
+    const queryPassRes = await request(app).get(`/api/download/${fileId}?password=SecretPass123`);
+    expect(queryPassRes.status).toBe(403);
+    expect(queryPassRes.body.message).toContain('Password required');
+
     // Download with wrong password -> 403
-    const wrongPassRes = await request(app).get(`/api/download/${fileId}?password=WrongPassword`);
+    const wrongPassRes = await request(app)
+      .post(`/api/download/${fileId}`)
+      .send({ password: 'WrongPassword' });
     expect(wrongPassRes.status).toBe(403);
     expect(wrongPassRes.body.message).toContain('Incorrect password');
 
     // Download with correct password -> 200
-    const correctPassRes = await request(app).get(`/api/download/${fileId}?password=SecretPass123`);
+    const correctPassRes = await request(app)
+      .post(`/api/download/${fileId}`)
+      .send({ password: 'SecretPass123' });
     expect(correctPassRes.status).toBe(200);
     expect(correctPassRes.headers['content-disposition']).toContain('secret_doc.txt');
   });
