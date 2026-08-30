@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import gsap from 'gsap';
 import { cn } from '../utils/cn';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 interface GlassContainerProps {
   children: ReactNode;
@@ -11,9 +12,10 @@ interface GlassContainerProps {
 
 export function GlassContainer({ children, className, animateEntrance = true }: GlassContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
-    if (!animateEntrance || !containerRef.current) return;
+    if (!animateEntrance || reduceMotion || !containerRef.current) return;
 
     gsap.fromTo(containerRef.current.children, 
       { 
@@ -29,7 +31,7 @@ export function GlassContainer({ children, className, animateEntrance = true }: 
         delay: 0.1
       }
     );
-  }, [animateEntrance]);
+  }, [animateEntrance, reduceMotion]);
 
   return (
     <div 

@@ -24,10 +24,10 @@ export function RootLayout() {
           <Logo size="medium" variant="with-text" />
         </Link>
         <div className="flex gap-6 items-center">
-          <Link to="/upload" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
+          <Link to="/upload" className="text-sm font-medium text-gray-700 hover:text-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 rounded-sm">
             Upload
           </Link>
-          <a href="https://github.com/isthatpratham/DeadDrop.git" target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
+          <a href="https://github.com/isthatpratham/DeadDrop" target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 hover:text-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 rounded-sm">
             Source
           </a>
         </div>

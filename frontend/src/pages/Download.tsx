@@ -11,11 +11,13 @@ import type { FileInfo } from '../services/fileInfo';
 import { Logo } from '../components/Logo';
 import { parseContentDispositionFilename } from '../utils/contentDisposition';
 import { getApiErrorMessage } from '../utils/apiError';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 type PageStatus = 'loading' | 'valid' | 'password-required' | 'invalid' | 'expired' | 'error';
 
 export function Download() {
   const { id } = useParams<{ id: string }>();
+  const reduceMotion = usePrefersReducedMotion();
   const [status, setStatus] = useState<PageStatus>('loading');
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const [password, setPassword] = useState('');
@@ -231,11 +233,13 @@ export function Download() {
               <Logo size="medium" variant="with-text" className="mb-6" />
               <div className="w-24 h-24 rounded-full bg-emerald-100/50 flex items-center justify-center mb-6 shadow-glass border border-emerald-200/50 relative">
                 <FileText className="w-12 h-12 text-emerald-700 absolute" strokeWidth={1} />
+                {!reduceMotion && (
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
                   className="w-full h-full rounded-full border-2 border-dashed border-emerald-500/30"
                 />
+                )}
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-gray-900 px-6 text-center drop-shadow-sm">
                 {fileInfo?.originalName || 'Temporary file'}
