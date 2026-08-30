@@ -22,3 +22,7 @@ if (!process.env.SQLITE_PATH) {
 
 fs.mkdirSync(process.env.UPLOAD_DIR as string, { recursive: true });
 fs.mkdirSync(path.dirname(process.env.SQLITE_PATH as string), { recursive: true });
+
+process.env.RATE_LIMIT_API_MAX ??= '10000';
+process.env.RATE_LIMIT_UPLOAD_MAX ??= '10000';
+process.env.RATE_LIMIT_DOWNLOAD_MAX ??= '10000';
