@@ -6,26 +6,14 @@ import fs from 'fs';
 import fileRoutes from './routes/fileRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { parseTrustProxy } from './config/trustProxy.js';
+import { createApiRateLimiter } from './middleware/rateLimits.js';
 
 dotenv.config();
 
 const app: Application = express();
 
-// Trust Proxy Configuration
-const trustProxyEnv = process.env.TRUST_PROXY;
-if (trustProxyEnv) {
-  if (trustProxyEnv.toLowerCase() === 'true') {
-    app.set('trust proxy', true);
-  } else if (trustProxyEnv.toLowerCase() === 'false') {
-    app.set('trust proxy', false);
-  } else if (!isNaN(Number(trustProxyEnv))) {
-    app.set('trust proxy', Number(trustProxyEnv));
-  } else {
-    app.set('trust proxy', trustProxyEnv);
-  }
-} else {
-  app.set('trust proxy', 1);
-}
+app.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY));
 
 // Middlewares
 app.use(express.json());
@@ -34,6 +22,7 @@ app.use(cors({
 }));
 
 // Routes
+app.use('/api', createApiRateLimiter());
 app.use('/api', healthRoutes);
 app.use('/api', fileRoutes);
 
