@@ -1,6 +1,8 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 import fileRoutes from './routes/fileRoutes.js';
 
 dotenv.config();
@@ -32,9 +34,27 @@ app.use(cors({
 // Routes
 app.use('/api', fileRoutes);
 
-// Basic health route
-app.get('/', (req: Request, res: Response) => {
-  res.send('API running');
-});
+// Production Static SPA Serving
+const frontendDistPath = path.resolve(process.cwd(), 'frontend', 'dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+
+  app.use((req: Request, res: Response, next) => {
+    if (req.method !== 'GET' || req.path.startsWith('/api')) {
+      return next();
+    }
+    const indexPath = path.resolve(frontendDistPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      next();
+    }
+  });
+} else {
+  // Basic health route fallback if SPA build is not present
+  app.get('/', (req: Request, res: Response) => {
+    res.send('API running');
+  });
+}
 
 export default app;
