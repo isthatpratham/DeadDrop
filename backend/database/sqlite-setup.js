@@ -50,8 +50,23 @@ export const sqliteSchemaStatements = [
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );`,
   `CREATE INDEX IF NOT EXISTS idx_files_expires_at ON files(expires_at);`,
-  `CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at);`
+  `CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at);`,
+  `CREATE INDEX IF NOT EXISTS idx_files_exhausted_downloads
+      ON files(download_count, max_downloads)
+      WHERE download_count >= max_downloads;`
 ];
+
+export const applySqlitePragmas = (db) => {
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+  db.pragma('busy_timeout = 5000');
+};
+
+export const applySqliteSchema = (db) => {
+  for (const statement of sqliteSchemaStatements) {
+    db.exec(statement);
+  }
+};
 
 export const initializeSqlite = () => {
   if (dbInstance) {
@@ -62,12 +77,8 @@ export const initializeSqlite = () => {
   fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 
   dbInstance = new Database(databasePath);
-  dbInstance.pragma('journal_mode = WAL');
-  dbInstance.pragma('foreign_keys = ON');
-
-  for (const statement of sqliteSchemaStatements) {
-    dbInstance.exec(statement);
-  }
+  applySqlitePragmas(dbInstance);
+  applySqliteSchema(dbInstance);
 
   return dbInstance;
 };
