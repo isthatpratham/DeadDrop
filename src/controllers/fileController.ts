@@ -129,13 +129,11 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
     };
 
     if (Date.now() > new Date(file.expires_at).getTime()) {
-      await deleteFile();
       res.status(410).json({ success: false, message: 'File has expired and is no longer available' });
       return;
     }
 
     if (file.download_count >= file.max_downloads) {
-      await deleteFile();
       res.status(410).json({ success: false, message: 'Download limit reached' });
       return;
     }
