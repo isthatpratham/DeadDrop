@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
       fs.mkdirSync(uploadDir, { recursive: true });
       cb(null, uploadDir);
     } catch (error) {
-      cb(error instanceof Error ? error : new Error('Failed to prepare upload directory'));
+      cb(error instanceof Error ? error : new Error('Failed to prepare upload directory'), '');
     }
   },
   filename: (req, file, cb) => {

@@ -2,16 +2,14 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { initializeSqlite, closeSqlite } from '../../backend/database/sqlite-setup.js';
+import { initializeSqlite, closeSqlite, getUploadDir } from '../../backend/database/sqlite-setup.js';
 import { performCleanupRound, reconcileStorageDirectory, startCleanupJob, stopCleanupJob } from '../services/cleanupService.js';
 
-const uploadDir = path.resolve(process.cwd(), 'uploads');
+const uploadDir = getUploadDir();
 
 describe('Storage Reconciliation & Graceful Shutdown', () => {
   beforeAll(() => {
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
+    fs.mkdirSync(uploadDir, { recursive: true });
     initializeSqlite();
   });
 

@@ -3,20 +3,16 @@ import request from 'supertest';
 import fs from 'fs';
 import path from 'path';
 import app from '../app.js';
-import { initializeSqlite, closeSqlite } from '../../backend/database/sqlite-setup.js';
+import { initializeSqlite, closeSqlite, getUploadDir } from '../../backend/database/sqlite-setup.js';
 import { performCleanupRound } from '../services/cleanupService.js';
 
-const tmpTestDir = path.resolve(process.cwd(), 'src', '__tests__', 'tmp_e2e');
-const uploadDir = path.resolve(process.cwd(), 'uploads');
+const tmpTestDir = path.join(getUploadDir(), 'fixtures-e2e');
+const uploadDir = getUploadDir();
 
 describe('Comprehensive E2E API Integration Test Suite', () => {
   beforeAll(() => {
-    if (!fs.existsSync(tmpTestDir)) {
-      fs.mkdirSync(tmpTestDir, { recursive: true });
-    }
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
+    fs.mkdirSync(tmpTestDir, { recursive: true });
+    fs.mkdirSync(uploadDir, { recursive: true });
     initializeSqlite();
   });
 
