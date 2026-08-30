@@ -34,6 +34,9 @@ app.use(cors({
 app.use('/api', createApiRateLimiter());
 app.use('/api', healthRoutes);
 app.use('/api', fileRoutes);
+app.use('/api', (req: Request, res: Response) => {
+  res.status(404).json({ success: false, message: 'Not found' });
+});
 
 // Production Static SPA Serving
 const frontendDistPath = path.resolve(process.cwd(), 'frontend', 'dist');
