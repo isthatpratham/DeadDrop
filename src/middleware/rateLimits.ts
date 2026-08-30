@@ -1,4 +1,5 @@
 import rateLimit, { type Options } from 'express-rate-limit';
+import { log, requestContext } from '../utils/logger.js';
 
 const parsePositiveInt = (raw: string | undefined, fallback: number): number => {
   const value = Number(raw);
@@ -6,6 +7,7 @@ const parsePositiveInt = (raw: string | undefined, fallback: number): number => 
 };
 
 const jsonExceededHandler: Options['handler'] = (req, res, _next, options) => {
+  log('warn', { event: 'rate_limited', ...requestContext(req), status: options.statusCode });
   res.status(options.statusCode).json({ success: false, message: 'Too many requests' });
 };
 

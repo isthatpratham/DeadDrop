@@ -2,6 +2,7 @@ import cron, { ScheduledTask } from 'node-cron';
 import fs from 'fs';
 import path from 'path';
 import { getSqliteDb, getUploadDir } from '../../backend/database/sqlite-setup.js';
+import { log } from '../utils/logger.js';
 
 type FileRow = {
   id: string;
@@ -37,7 +38,7 @@ export const reconcileStorageDirectory = (): number => {
 
       // Path Safety / Containment Check: ensure file is directly inside uploadDir
       if (!filePath.startsWith(uploadDir)) {
-        console.warn(`Path safety check failed during reconciliation for: ${filePath}`);
+        log('warn', { event: 'cleanup', message: 'path_safety_rejected' });
         continue;
       }
 
@@ -56,16 +57,15 @@ export const reconcileStorageDirectory = (): number => {
         if (!activePathsSet.has(filePath)) {
           fs.unlinkSync(filePath);
           unlinkedCount++;
-          console.log(`Reconciled orphaned storage file deleted: ${filename}`);
         }
-      } catch (fileErr) {
-        console.error(`Error processing file during storage reconciliation ${filename}:`, fileErr);
+      } catch {
+        log('error', { event: 'cleanup', message: 'reconcile_file_failed' });
       }
     }
 
     return unlinkedCount;
-  } catch (error) {
-    console.error('Error during storage directory reconciliation:', error);
+  } catch {
+    log('error', { event: 'cleanup', message: 'reconcile_failed' });
     return 0;
   }
 };
@@ -89,17 +89,18 @@ export const performCleanupRound = (): { expiredDeleted: number; orphanedDeleted
         }
         db.prepare('DELETE FROM files WHERE id = ?').run(file.id);
         expiredDeleted++;
-      } catch (fileError) {
-        console.error(`Failed to clean up record ${file.id}:`, fileError);
+      } catch {
+        log('error', { event: 'cleanup', fileId: file.id, message: 'record_cleanup_failed' });
       }
     }
 
     // 2. Reconcile orphaned files on disk
     const orphanedDeleted = reconcileStorageDirectory();
+    log('info', { event: 'cleanup', expiredDeleted, orphanedDeleted });
 
     return { expiredDeleted, orphanedDeleted };
-  } catch (error) {
-    console.error('Error during cleanup round:', error);
+  } catch {
+    log('error', { event: 'cleanup', message: 'round_failed' });
     return { expiredDeleted: 0, orphanedDeleted: 0 };
   }
 };
@@ -111,9 +112,7 @@ export const startCleanupJob = (): ScheduledTask => {
 
   // Run every 5 minutes
   scheduledTask = cron.schedule('*/5 * * * *', () => {
-    console.log('Running scheduled cleanup job...');
-    const result = performCleanupRound();
-    console.log(`Cleanup job summary: ${result.expiredDeleted} database records cleaned, ${result.orphanedDeleted} orphaned files removed.`);
+    performCleanupRound();
   });
 
   return scheduledTask;
@@ -123,6 +122,6 @@ export const stopCleanupJob = (): void => {
   if (scheduledTask) {
     scheduledTask.stop();
     scheduledTask = null;
-    console.log('Cleanup background cron job stopped.');
+    log('info', { event: 'cleanup', message: 'stopped' });
   }
 };
