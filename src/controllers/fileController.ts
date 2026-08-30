@@ -153,6 +153,22 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
       }
     }
 
+    // Reserve the slot before streaming. A failed transfer still consumes the
+    // slot so one-time secrets cannot be retried after a partial send.
+    const reservation = db.prepare(`
+      UPDATE files
+      SET download_count = download_count + 1
+      WHERE id = ?
+        AND download_count < max_downloads
+        AND expires_at > ?
+    `).run(fileId, new Date().toISOString());
+
+    if (reservation.changes === 0) {
+      res.status(410).json({ success: false, message: 'File has expired or is no longer available' });
+      return;
+    }
+
+    const reservedCount = file.download_count + 1;
     const absolutePath = path.resolve(file.file_path);
     res.setHeader('Content-Disposition', formatContentDisposition(file.original_name));
 
@@ -162,13 +178,14 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
         if (!res.headersSent) {
           res.status(500).json({ success: false, message: 'Error downloading file' });
         }
-      } else {
-        db.prepare('UPDATE files SET download_count = download_count + 1 WHERE id = ?').run(fileId);
-
-        const refreshed = getFile.get(fileId) as SqliteFileRow | undefined;
-        if (refreshed && refreshed.download_count >= refreshed.max_downloads) {
+        if (reservedCount >= file.max_downloads) {
           await deleteFile();
         }
+        return;
+      }
+
+      if (reservedCount >= file.max_downloads) {
+        await deleteFile();
       }
     });
   } catch (error) {
