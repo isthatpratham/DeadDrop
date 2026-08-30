@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  deaddrop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - CORS_ORIGIN=*
+      - TRUST_PROXY=1
+    volumes:
+      - deaddrop_data:/app/backend/database
+      - deaddrop_uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  deaddrop_data:
+  deaddrop_uploads:
