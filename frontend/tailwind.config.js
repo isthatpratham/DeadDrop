@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
       },
       colors: {
         background: '#f5f1eb',

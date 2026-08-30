@@ -8,6 +8,8 @@ import healthRoutes from './routes/healthRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { parseTrustProxy } from './config/trustProxy.js';
 import { createApiRateLimiter } from './middleware/rateLimits.js';
+import { isOriginAllowed, resolveCorsOrigin } from './config/cors.js';
+import { securityHeaders } from './config/helmet.js';
 
 dotenv.config();
 
@@ -16,8 +18,13 @@ const app: Application = express();
 app.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY));
 
 // Middlewares
+app.use(securityHeaders());
 app.use(express.json());
+const corsOrigin = resolveCorsOrigin(process.env.CORS_ORIGIN);
 app.use(cors({
+  origin: (requestOrigin, callback) => {
+    callback(null, isOriginAllowed(requestOrigin, corsOrigin));
+  },
   exposedHeaders: ['Content-Disposition'],
 }));
 
