@@ -89,7 +89,7 @@ The Vite app reads `VITE_API_BASE_URL` from `frontend/.env` (default `/api`). Se
 docker compose up --build
 ```
 
-The image is `node:20-bookworm-slim`. Named volumes persist SQLite and uploads. Compose sets `TRUST_PROXY=1` and does not open CORS. Production CORS defaults to same-origin.
+The image is `node:20-bookworm-slim`. Named volumes persist SQLite and uploads. Compose sets `TRUST_PROXY=1` and does not open CORS. Production CORS defaults to same-origin. Container health checks `GET /api/ready` so a process that is up but cannot write SQLite or uploads is not treated as healthy.
 
 ## Tests
 

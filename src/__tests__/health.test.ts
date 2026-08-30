@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import request from 'supertest';
 import app from '../app.js';
 import { initializeSqlite, closeSqlite } from '../../backend/database/sqlite-setup.js';
@@ -39,6 +41,16 @@ describe('Health and readiness endpoints', () => {
     expect(res.body.status).toBe('not_ready');
 
     initializeSqlite();
+  });
+
+  it('Docker HEALTHCHECK probes readiness, not liveness', () => {
+    const dockerfile = fs.readFileSync(path.resolve(process.cwd(), 'Dockerfile'), 'utf8');
+    const compose = fs.readFileSync(path.resolve(process.cwd(), 'docker-compose.yml'), 'utf8');
+
+    expect(dockerfile).toContain('/api/ready');
+    expect(dockerfile).not.toMatch(/HEALTHCHECK[\s\S]*\/api\/health/);
+    expect(compose).toContain('/api/ready');
+    expect(compose).not.toMatch(/healthcheck:[\s\S]*\/api\/health/);
   });
 
   it('GET /api/health still succeeds when SQLite is closed', async () => {
