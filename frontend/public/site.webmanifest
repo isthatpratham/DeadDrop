@@ -1,7 +1,7 @@
 {
   "name": "DeadDrop",
   "short_name": "DeadDrop",
-  "description": "Anonymous and secure dead drop messaging platform",
+  "description": "Anonymous file drops with expiring download links",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
