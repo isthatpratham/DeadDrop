@@ -171,3 +171,48 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
     }
   }
 };
+
+export const getFileInfo = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const fileIdParam = req.params.id;
+    const fileId = Array.isArray(fileIdParam) ? fileIdParam[0] : fileIdParam;
+    if (!uuidV4Pattern.test(fileId)) {
+      res.status(404).json({ success: false, message: 'File not found' });
+      return;
+    }
+
+    const db = getSqliteDb();
+    const getFile = db.prepare('SELECT * FROM files WHERE id = ?');
+    const file = getFile.get(fileId) as SqliteFileRow | undefined;
+
+    if (!file) {
+      res.status(404).json({ success: false, message: 'File not found' });
+      return;
+    }
+
+    if (Date.now() > new Date(file.expires_at).getTime() || file.download_count >= file.max_downloads) {
+      res.status(410).json({ success: false, message: 'File has expired or is no longer available' });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      file: {
+        id: file.id,
+        originalName: file.original_name,
+        size: file.size,
+        expiresAt: file.expires_at,
+        maxDownloads: file.max_downloads,
+        downloadCount: file.download_count,
+        hasPassword: Boolean(file.password_hash),
+        createdAt: file.created_at,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ success: false, message: error.message });
+    } else {
+      res.status(500).json({ success: false, message: 'An unknown error occurred' });
+    }
+  }
+};
