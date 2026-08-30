@@ -1,3 +1,9 @@
+# DeadDrop frontend
+
+Vite development server proxies `/api` to `http://localhost:5000`.
+
+Production builds call same-origin `/api` unless you set `VITE_API_BASE_URL` for a split-origin deployment (for example `https://api.example.com/api`).
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
