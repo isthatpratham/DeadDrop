@@ -9,6 +9,8 @@ import { GlassButton } from '../components/GlassButton';
 import { uploadFileAPI } from '../services/api';
 import { Logo } from '../components/Logo';
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
 export function Upload() {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
@@ -33,17 +35,35 @@ export function Upload() {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setFile(e.dataTransfer.files[0]);
+      const nextFile = e.dataTransfer.files[0];
+      if (nextFile.size > MAX_UPLOAD_BYTES) {
+        setErrorStatus('File exceeds the 10MB limit');
+        setFile(null);
+        return;
+      }
+      setErrorStatus(null);
+      setFile(nextFile);
     }
   };
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
+      const nextFile = e.target.files[0];
+      if (nextFile.size > MAX_UPLOAD_BYTES) {
+        setErrorStatus('File exceeds the 10MB limit');
+        setFile(null);
+        return;
+      }
+      setErrorStatus(null);
+      setFile(nextFile);
     }
   };
 
   const handleUpload = async () => {
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setErrorStatus('File exceeds the 10MB limit');
+      return;
+    }
     setIsUploading(true);
     setProgress(10); // Fake initial progress for UI feel
     setErrorStatus(null);
@@ -131,7 +151,7 @@ export function Upload() {
                     <UploadCloud className="w-8 h-8 text-gray-800" strokeWidth={1.5} />
                   </div>
                   <p className="font-semibold text-lg text-gray-800">Click or drag file to upload</p>
-                  <p className="text-sm mt-1 text-gray-500">Maximum file size: 2GB</p>
+                  <p className="text-sm mt-1 text-gray-500">Maximum file size: 10MB</p>
                 </motion.div>
               ) : (
                 <motion.div
@@ -182,6 +202,7 @@ export function Upload() {
               <GlassInput
                 type="number"
                 min="1"
+                max="100"
                 value={maxDownloads}
                 onChange={e => setMaxDownloads(e.target.value)}
                 placeholder="e.g., 1"
