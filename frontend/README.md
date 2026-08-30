@@ -1,79 +1,40 @@
 # DeadDrop frontend
 
-Vite development server proxies `/api` to `http://localhost:5000`.
+React 19 + Vite UI for uploading a file and opening its share link.
 
-Production builds call same-origin `/api` unless you set `VITE_API_BASE_URL` for a split-origin deployment (for example `https://api.example.com/api`).
+## Development
 
-# React + TypeScript + Vite
+From this directory:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+copy .env.example .env
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Vite listens on http://localhost:5173 and proxies `/api` to http://localhost:5000. Run the backend from the repo root (`npm run dev`) at the same time.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Environment
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | `/api` | Axios base URL. Leave as `/api` for the Vite proxy and for same-origin production. Set an absolute URL only for a split-origin API (for example `https://api.example.com/api`). |
+
+Vite only reads `frontend/.env`. The root `.env` is for the Express process.
+
+## Scripts
+
+```bash
+npm run dev      # Vite dev server
+npm test         # Vitest + Testing Library
+npm run build    # tsc -b && vite build
+npm run preview  # serve the production build
 ```
+
+## Production
+
+`npm run build` writes to `frontend/dist`. The Express app serves that directory when it exists, so Docker and `npm run build:all` are same-origin: the browser calls `/api` on the page host.
+
+## Limits shown in the UI
+
+These match the API: 10 MB maximum, JPEG/PNG/PDF/TXT/ZIP, expiry presets of 1 hour / 24 hours / 7 days, 1–100 downloads, optional password. Files are not encrypted.
