@@ -48,4 +48,27 @@ describe('Atomic download reservation', () => {
     const loser = first.status === 410 ? first : second;
     expect(loser.body.success).toBe(false);
   });
+
+  it('returns 410 and removes the record when the stored file is already gone', async () => {
+    const filePath = path.join(fixturesDir, 'already-gone.txt');
+    fs.writeFileSync(filePath, 'will be deleted from disk');
+
+    const uploadRes = await request(app)
+      .post('/api/upload')
+      .field('expiryMinutes', '60')
+      .field('maxDownloads', '3')
+      .attach('file', filePath, { filename: 'already-gone.txt', contentType: 'text/plain' });
+
+    expect(uploadRes.status).toBe(201);
+    const fileId = uploadRes.body.fileId as string;
+    const db = initializeSqlite();
+    const row = db.prepare('SELECT file_path FROM files WHERE id = ?').get(fileId) as { file_path: string };
+    fs.unlinkSync(row.file_path);
+
+    const res = await request(app).get(`/api/download/${fileId}`);
+    expect(res.status).toBe(410);
+    expect(res.headers['content-type']).toMatch(/json/);
+    expect(res.body.success).toBe(false);
+    expect(db.prepare('SELECT id FROM files WHERE id = ?').get(fileId)).toBeUndefined();
+  });
 });

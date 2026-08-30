@@ -168,11 +168,12 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
     // slot so one-time secrets cannot be retried after a partial send.
     const reservation = db.prepare(`
       UPDATE files
-      SET download_count = download_count + 1
+      SET download_count = download_count + 1,
+          last_download_at = ?
       WHERE id = ?
         AND download_count < max_downloads
         AND expires_at > ?
-    `).run(fileId, new Date().toISOString());
+    `).run(new Date().toISOString(), fileId, new Date().toISOString());
 
     if (reservation.changes === 0) {
       log('warn', { event: 'download_fail', ...requestContext(req), status: 410, fileId, message: 'reservation_lost' });
@@ -186,6 +187,17 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
 
     res.sendFile(absolutePath, async (err) => {
       if (err) {
+        const missing = !fs.existsSync(absolutePath)
+          || (err as NodeJS.ErrnoException).code === 'ENOENT';
+        if (missing) {
+          log('warn', { event: 'download_fail', ...requestContext(req), status: 410, fileId, message: 'missing_file' });
+          if (!res.headersSent) {
+            res.status(410).json({ success: false, message: 'File has expired or is no longer available' });
+          }
+          await deleteFile();
+          return;
+        }
+
         log('error', { event: 'download_fail', ...requestContext(req), status: 500, fileId });
         if (!res.headersSent) {
           res.status(500).json({ success: false, message: 'Error downloading file' });

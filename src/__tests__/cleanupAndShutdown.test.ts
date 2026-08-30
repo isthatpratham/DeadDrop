@@ -62,6 +62,27 @@ describe('Storage Reconciliation & Graceful Shutdown', () => {
     expect(row).toBeUndefined();
   });
 
+  it('does not unlink a file reserved for an in-flight download', () => {
+    const db = initializeSqlite();
+    const testId = uuidv4();
+    const inflightPath = path.join(uploadDir, `test_inflight_${testId}.txt`);
+    fs.writeFileSync(inflightPath, 'in-flight download content');
+
+    const futureExpiry = new Date(Date.now() + 3600 * 1000).toISOString();
+    const reservedAt = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO files (id, original_name, stored_name, file_path, size, expires_at, max_downloads, download_count, last_download_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(testId, 'inflight.txt', `test_inflight_${testId}.txt`, inflightPath, 24, futureExpiry, 1, 1, reservedAt);
+
+    performCleanupRound();
+    expect(fs.existsSync(inflightPath)).toBe(true);
+    expect(db.prepare('SELECT id FROM files WHERE id = ?').get(testId)).toBeDefined();
+
+    fs.unlinkSync(inflightPath);
+    db.prepare('DELETE FROM files WHERE id = ?').run(testId);
+  });
+
   it('should delete old orphaned files from upload directory during reconciliation', () => {
     const testId = uuidv4();
     const orphanedFilePath = path.join(uploadDir, `test_orphaned_${testId}.txt`);
