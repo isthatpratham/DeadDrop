@@ -87,6 +87,15 @@ describe('Magic-Byte & File Validation Security', () => {
     expect(result.message).toContain('Binary content detected');
   });
 
+  it('should reject empty files', () => {
+    const filePath = path.join(testDir, 'empty.txt');
+    fs.writeFileSync(filePath, '');
+
+    const result = validateFileMagicBytes(filePath, 'text/plain');
+    expect(result.valid).toBe(false);
+    expect(result.message).toContain('Empty files');
+  });
+
   it('should accept valid short plain text files', () => {
     const filePath = path.join(testDir, 'short.txt');
     fs.writeFileSync(filePath, 'Hi');
