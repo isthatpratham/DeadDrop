@@ -4,6 +4,9 @@ import connectDB from './config/db.js';
 import { startCleanupJob, stopCleanupJob } from './services/cleanupService.js';
 import { closeSqlite } from '../backend/database/sqlite-setup.js';
 import { log } from './utils/logger.js';
+import { createShutdownGate } from './utils/shutdownGate.js';
+
+const shutdownGate = createShutdownGate();
 
 dotenv.config();
 
@@ -20,6 +23,11 @@ const server = app.listen(PORT, () => {
 });
 
 export const gracefulShutdown = (signal: string, callback?: () => void) => {
+  if (!shutdownGate.tryStart()) {
+    log('info', { event: 'shutdown', signal, message: 'already_in_progress' });
+    return;
+  }
+
   log('info', { event: 'shutdown', signal });
 
   stopCleanupJob();
