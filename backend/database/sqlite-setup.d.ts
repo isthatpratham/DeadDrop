@@ -1,6 +1,8 @@
 import Database from 'better-sqlite3';
 
 export const sqliteSchemaStatements: string[];
+export const applySqlitePragmas: (db: Database.Database) => void;
+export const applySqliteSchema: (db: Database.Database) => void;
 export const initializeSqlite: () => Database.Database;
 export const getSqliteDb: () => Database.Database;
 export const closeSqlite: () => void;

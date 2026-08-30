@@ -19,24 +19,6 @@ export const getUploadDir = () => {
 };
 
 export const sqliteSchemaStatements = [
-  `CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      username TEXT NOT NULL,
-      email TEXT NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );`,
-  `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username);`,
-  `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);`,
-  `CREATE TABLE IF NOT EXISTS messages (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    );`,
-  `CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);`,
-  `CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);`,
   `CREATE TABLE IF NOT EXISTS files (
       id TEXT PRIMARY KEY,
       original_name TEXT NOT NULL,
@@ -50,8 +32,23 @@ export const sqliteSchemaStatements = [
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );`,
   `CREATE INDEX IF NOT EXISTS idx_files_expires_at ON files(expires_at);`,
-  `CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at);`
+  `CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at);`,
+  `CREATE INDEX IF NOT EXISTS idx_files_exhausted_downloads
+      ON files(download_count, max_downloads)
+      WHERE download_count >= max_downloads;`
 ];
+
+export const applySqlitePragmas = (db) => {
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+  db.pragma('busy_timeout = 5000');
+};
+
+export const applySqliteSchema = (db) => {
+  for (const statement of sqliteSchemaStatements) {
+    db.exec(statement);
+  }
+};
 
 export const initializeSqlite = () => {
   if (dbInstance) {
@@ -62,12 +59,8 @@ export const initializeSqlite = () => {
   fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 
   dbInstance = new Database(databasePath);
-  dbInstance.pragma('journal_mode = WAL');
-  dbInstance.pragma('foreign_keys = ON');
-
-  for (const statement of sqliteSchemaStatements) {
-    dbInstance.exec(statement);
-  }
+  applySqlitePragmas(dbInstance);
+  applySqliteSchema(dbInstance);
 
   return dbInstance;
 };
