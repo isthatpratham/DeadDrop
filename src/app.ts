@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import fileRoutes from './routes/fileRoutes.js';
+import healthRoutes from './routes/healthRoutes.js';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use(cors({
 }));
 
 // Routes
+app.use('/api', healthRoutes);
 app.use('/api', fileRoutes);
 
 // Production Static SPA Serving

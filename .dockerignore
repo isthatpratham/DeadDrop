@@ -1,0 +1,15 @@
+node_modules
+frontend/node_modules
+dist
+frontend/dist
+.git
+.github
+uploads
+backend/database/*.db
+backend/database/*.db-wal
+backend/database/*.db-shm
+backend/database/*.db-journal
+*.log
+.env
+.env.*
+!.env.example
