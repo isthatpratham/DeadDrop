@@ -5,6 +5,7 @@ import path from 'path';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { formatContentDisposition } from '../utils/disposition.js';
+import { validateFileMagicBytes } from '../utils/fileValidation.js';
 
 type SqliteFileRow = {
   id: string;
@@ -25,6 +26,15 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
   try {
     if (!req.file) {
       res.status(400).json({ success: false, message: 'No file uploaded' });
+      return;
+    }
+
+    const validation = validateFileMagicBytes(req.file.path, req.file.mimetype);
+    if (!validation.valid) {
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(400).json({ success: false, message: validation.message || 'Invalid file content' });
       return;
     }
 
