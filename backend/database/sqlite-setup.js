@@ -29,7 +29,8 @@ export const sqliteSchemaStatements = [
       max_downloads INTEGER NOT NULL DEFAULT 1,
       download_count INTEGER NOT NULL DEFAULT 0,
       password_hash TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      last_download_at TEXT
     );`,
   `CREATE INDEX IF NOT EXISTS idx_files_expires_at ON files(expires_at);`,
   `CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at);`,
@@ -47,6 +48,11 @@ export const applySqlitePragmas = (db) => {
 export const applySqliteSchema = (db) => {
   for (const statement of sqliteSchemaStatements) {
     db.exec(statement);
+  }
+
+  const columns = db.pragma('table_info(files)');
+  if (Array.isArray(columns) && !columns.some((column) => column.name === 'last_download_at')) {
+    db.exec('ALTER TABLE files ADD COLUMN last_download_at TEXT');
   }
 };
 

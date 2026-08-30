@@ -70,15 +70,28 @@ export const reconcileStorageDirectory = (): number => {
   }
 };
 
+export const CLEANUP_IN_FLIGHT_GRACE_MS = 5 * 60 * 1000;
+
 export const performCleanupRound = (): { expiredDeleted: number; orphanedDeleted: number } => {
   try {
     const nowIso = new Date().toISOString();
+    const graceIso = new Date(Date.now() - CLEANUP_IN_FLIGHT_GRACE_MS).toISOString();
     const db = getSqliteDb();
 
-    // 1. Delete records that are expired OR have reached max_downloads
+    // Skip rows reserved recently so cleanup cannot unlink a file mid-sendFile.
     const expiredOrLimitFiles = db
-      .prepare('SELECT id, file_path FROM files WHERE expires_at < ? OR download_count >= max_downloads')
-      .all(nowIso) as FileRow[];
+      .prepare(`
+        SELECT id, file_path FROM files
+        WHERE (
+          expires_at < ?
+          AND (last_download_at IS NULL OR last_download_at < ?)
+        )
+        OR (
+          download_count >= max_downloads
+          AND (last_download_at IS NULL OR last_download_at < ?)
+        )
+      `)
+      .all(nowIso, graceIso, graceIso) as FileRow[];
 
     let expiredDeleted = 0;
 
