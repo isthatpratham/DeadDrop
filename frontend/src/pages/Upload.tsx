@@ -7,6 +7,7 @@ import { GlassCard } from '../components/GlassCard';
 import { GlassInput } from '../components/GlassInput';
 import { GlassButton } from '../components/GlassButton';
 import { uploadFileAPI } from '../services/api';
+import { getApiErrorMessage } from '../utils/apiError';
 import { Logo } from '../components/Logo';
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
@@ -102,8 +103,8 @@ export function Upload() {
       } else {
         throw new Error(res.message || 'Upload failed');
       }
-    } catch (err: any) {
-      setErrorStatus(err.message || 'Error communicating with server');
+    } catch (err) {
+      setErrorStatus(getApiErrorMessage(err, 'Error communicating with server'));
       setIsUploading(false);
       setProgress(0);
     }
@@ -123,7 +124,7 @@ export function Upload() {
               <Logo size="medium" variant="with-text" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2 drop-shadow-sm">Share a File</h1>
-            <p className="text-gray-600 font-medium">Secure, encrypted, and transient.</p>
+            <p className="text-gray-600 font-medium">Private, expiring, and temporary.</p>
           </div>
 
           <div
@@ -251,7 +252,7 @@ export function Upload() {
               onClick={handleUpload}
               disabled={!file || isUploading}
             >
-              {isUploading ? `Encrypting and Uploading... ${progress}%` : 'Upload File securely'}
+              {isUploading ? `Uploading... ${progress}%` : 'Upload file'}
             </GlassButton>
           </div>
         </GlassCard>
