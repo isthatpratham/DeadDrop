@@ -24,7 +24,14 @@ export const upload = multer({
   storage,
   limits: {
     fileSize: MAX_UPLOAD_BYTES,
-  },
+    files: 1,
+    fields: 8,
+    fieldNameSize: 64,
+    // DeadDrop only uses flat fields (file, expiryMinutes, maxDownloads, password).
+    // These caps block the multer field-parser DoS advisories that are opt-in on 2.3.x.
+    fieldNestingDepth: 0,
+    fieldArrayIndexLimit: 0,
+  } as multer.Options['limits'],
   fileFilter: (req, file, cb) => {
     if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       cb(null, true);

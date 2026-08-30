@@ -127,6 +127,21 @@ describe('Upload validation API', () => {
     expect(res.body.message).toBe('File exceeds the 10MB limit');
   });
 
+  it('rejects deeply nested multipart field names', async () => {
+    const filePath = writeTextFixture('nested.txt', 'nested field probe');
+
+    const res = await request(app)
+      .post('/api/upload')
+      .field('expiryMinutes', '60')
+      .field('a[b][c][d]', 'x')
+      .attach('file', filePath, { filename: 'nested.txt', contentType: 'text/plain' });
+
+    expect(res.status).toBe(400);
+    expect(res.headers['content-type']).toMatch(/json/);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('Field name nesting too deep');
+  });
+
   it('rejects invalid MIME types with a JSON 400', async () => {
     const exePath = writeTextFixture('malware.exe', 'not an allowed type');
 
