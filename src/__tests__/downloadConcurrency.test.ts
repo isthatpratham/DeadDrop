@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import app from '../app.js';
 import { initializeSqlite, closeSqlite, getUploadDir } from '../../backend/database/sqlite-setup.js';
+import { performCleanupRound } from '../services/cleanupService.js';
 
 const fixturesDir = path.join(getUploadDir(), 'fixtures-download-concurrency');
 
@@ -70,5 +71,27 @@ describe('Atomic download reservation', () => {
     expect(res.headers['content-type']).toMatch(/json/);
     expect(res.body.success).toBe(false);
     expect(db.prepare('SELECT id FROM files WHERE id = ?').get(fileId)).toBeUndefined();
+  });
+
+  it('completes a download when cleanup runs at the same time', async () => {
+    const filePath = path.join(fixturesDir, 'cleanup-race.txt');
+    fs.writeFileSync(filePath, 'cleanup-race payload');
+
+    const uploadRes = await request(app)
+      .post('/api/upload')
+      .field('expiryMinutes', '60')
+      .field('maxDownloads', '1')
+      .attach('file', filePath, { filename: 'cleanup-race.txt', contentType: 'text/plain' });
+
+    expect(uploadRes.status).toBe(201);
+    const fileId = uploadRes.body.fileId as string;
+
+    const [downloadRes] = await Promise.all([
+      request(app).get(`/api/download/${fileId}`),
+      Promise.resolve().then(() => performCleanupRound()),
+    ]);
+
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.text).toContain('cleanup-race payload');
   });
 });
