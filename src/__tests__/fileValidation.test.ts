@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { getUploadDir } from '../../backend/database/sqlite-setup.js';
 import { validateFileMagicBytes } from '../utils/fileValidation.js';
 
-const testDir = path.join(process.cwd(), 'src', '__tests__', 'tmp_validation');
+const testDir = path.join(getUploadDir(), 'fixtures-validation');
 
 describe('Magic-Byte & File Validation Security', () => {
   beforeAll(() => {

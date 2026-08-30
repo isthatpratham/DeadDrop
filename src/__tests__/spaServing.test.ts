@@ -3,8 +3,9 @@ import express, { Request, Response } from 'express';
 import request from 'supertest';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
-const testDistPath = path.resolve(process.cwd(), 'frontend', 'dist');
+const testDistPath = path.join(os.tmpdir(), `deaddrop-spa-${process.pid}`);
 
 describe('Production SPA Serving & API Route Isolation', () => {
   let testApp: express.Application;

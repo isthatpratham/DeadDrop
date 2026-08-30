@@ -8,7 +8,9 @@
     "dev": "tsx watch src/server.ts",
     "build": "rimraf dist && tsc",
     "build:all": "npm run build && npm --prefix frontend run build",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

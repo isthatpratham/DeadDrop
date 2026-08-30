@@ -1,7 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import fs from 'fs';
 import path from 'path';
-import { getSqliteDb } from '../../backend/database/sqlite-setup.js';
+import { getSqliteDb, getUploadDir } from '../../backend/database/sqlite-setup.js';
 
 type FileRow = {
   id: string;
@@ -12,7 +12,7 @@ let scheduledTask: ScheduledTask | null = null;
 
 export const reconcileStorageDirectory = (): number => {
   try {
-    const uploadDir = path.resolve(process.cwd(), 'uploads');
+    const uploadDir = getUploadDir();
     if (!fs.existsSync(uploadDir)) {
       return 0;
     }

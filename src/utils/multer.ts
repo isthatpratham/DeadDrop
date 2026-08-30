@@ -2,16 +2,17 @@ import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
-
-const uploadDir = path.join(process.cwd(), 'uploads');
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+import { getUploadDir } from '../../backend/database/sqlite-setup.js';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir);
+    try {
+      const uploadDir = getUploadDir();
+      fs.mkdirSync(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+    } catch (error) {
+      cb(error instanceof Error ? error : new Error('Failed to prepare upload directory'), '');
+    }
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);

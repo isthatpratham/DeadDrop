@@ -2,10 +2,21 @@ import fs from 'fs';
 import path from 'path';
 import Database from 'better-sqlite3';
 
-const databaseDir = path.resolve(process.cwd(), 'backend', 'database');
-const databasePath = path.resolve(databaseDir, 'deaddrop.db');
-
 let dbInstance;
+
+export const getSqlitePath = () => {
+  if (process.env.SQLITE_PATH) {
+    return path.resolve(process.env.SQLITE_PATH);
+  }
+  return path.resolve(process.cwd(), 'backend', 'database', 'deaddrop.db');
+};
+
+export const getUploadDir = () => {
+  if (process.env.UPLOAD_DIR) {
+    return path.resolve(process.env.UPLOAD_DIR);
+  }
+  return path.resolve(process.cwd(), 'uploads');
+};
 
 export const sqliteSchemaStatements = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -47,7 +58,8 @@ export const initializeSqlite = () => {
     return dbInstance;
   }
 
-  fs.mkdirSync(databaseDir, { recursive: true });
+  const databasePath = getSqlitePath();
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 
   dbInstance = new Database(databasePath);
   dbInstance.pragma('journal_mode = WAL');
@@ -75,4 +87,3 @@ export const closeSqlite = () => {
   }
 };
 
-export const getSqlitePath = () => databasePath;
