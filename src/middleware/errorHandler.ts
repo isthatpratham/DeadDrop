@@ -33,6 +33,13 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     return;
   }
 
+  const parseError = err as { type?: string; status?: number; expose?: boolean };
+  if (err instanceof SyntaxError || parseError.type === 'entity.parse.failed') {
+    log('warn', { event: 'request_fail', ...requestContext(req), status: 400, message: 'Invalid JSON' });
+    res.status(400).json({ success: false, message: 'Invalid JSON' });
+    return;
+  }
+
   log('error', { event: 'server_error', ...requestContext(req), status: 500 });
   res.status(500).json({ success: false, message: 'An unknown error occurred' });
 };
