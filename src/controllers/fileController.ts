@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import { formatContentDisposition } from '../utils/disposition.js';
 
 type SqliteFileRow = {
   id: string;
@@ -135,6 +136,7 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
     }
 
     const absolutePath = path.resolve(file.file_path);
+    res.setHeader('Content-Disposition', formatContentDisposition(file.original_name));
 
     res.sendFile(absolutePath, async (err) => {
       if (err) {
