@@ -18,7 +18,19 @@ COPY . .
 RUN npm run build
 RUN npm --prefix frontend run build
 
-# Stage 2: Production runtime
+# Compile native production modules (better-sqlite3) on the same OS as the runtime.
+FROM node:20-bookworm-slim AS prod-deps
+
+WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Production runtime — no compiler toolchain
 FROM node:20-bookworm-slim AS runner
 
 WORKDIR /app
@@ -29,11 +41,11 @@ ENV SQLITE_PATH=/app/backend/database/deaddrop.db
 ENV UPLOAD_DIR=/app/uploads
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends gosu python3 make g++ \
+  && apt-get install -y --no-install-recommends gosu \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm ci --omit=dev
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/frontend/dist ./frontend/dist
