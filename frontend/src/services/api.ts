@@ -13,11 +13,14 @@ export const uploadFileAPI = async (formData: FormData) => {
 };
 
 export const downloadFileAPI = async (id: string, password?: string) => {
-  const params = password ? { password } : {};
-  const response = await api.get(`/download/${id}`, {
-    params,
-    responseType: 'blob',
-    validateStatus: (status) => status < 500,
-  });
-  return response;
+  const requestConfig = {
+    responseType: 'blob' as const,
+    validateStatus: (status: number) => status < 500,
+  };
+
+  if (password) {
+    return api.post(`/download/${id}`, { password }, requestConfig);
+  }
+
+  return api.get(`/download/${id}`, requestConfig);
 };
