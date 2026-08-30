@@ -124,6 +124,32 @@ DeadDrop/
 └── package.json
 ```
 
+## Data retention and privacy
+
+DeadDrop is designed to forget files, not to keep a user dossier.
+
+**Stored on disk until cleanup**
+
+- The uploaded file bytes (plaintext; there is no at-rest encryption)
+- SQLite metadata: original filename, size, expiry, download counts, optional bcrypt password hash, created time, and last download time
+- Files and rows are removed when they expire, when the download limit is reached, or when a stored file is already missing
+- A cleanup job runs every 5 minutes; orphaned upload-directory files older than 15 minutes are deleted
+
+**Not persisted**
+
+- Client IP addresses (used only in memory for rate limiting)
+- Passwords (only a bcrypt hash is stored; query-string passwords are ignored)
+- File contents in logs
+- Authorization or cookie headers
+
+**Logs**
+
+- Stdout JSON lines with timestamp, level, event, request ID, method, path, status, file ID, and size
+- Request IDs are accepted only as `[A-Za-z0-9._-]{1,128}` or generated
+- Logs last as long as the process or container log driver retains them; DeadDrop does not write a separate log database
+
+If you need files encrypted before they leave the browser, that must happen in a client you control. This server will still store whatever ciphertext you upload as an opaque blob.
+
 ## Contributing
 
 1. Fork the repository
