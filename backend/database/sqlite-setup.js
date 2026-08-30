@@ -68,4 +68,11 @@ export const getSqliteDb = () => {
   return dbInstance;
 };
 
+export const closeSqlite = () => {
+  if (dbInstance) {
+    dbInstance.close();
+    dbInstance = null;
+  }
+};
+
 export const getSqlitePath = () => databasePath;
