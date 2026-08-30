@@ -6,13 +6,15 @@ import { GlassContainer } from '../components/GlassContainer';
 import { GlassCard } from '../components/GlassCard';
 import { GlassButton } from '../components/GlassButton';
 import { Logo } from '../components/Logo';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 export function Home() {
   const navigate = useNavigate();
   const shapesRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
-    if (!shapesRef.current) return;
+    if (reduceMotion || !shapesRef.current) return;
     const shapes = shapesRef.current.children;
     
     // GSAP floating animation for background shapes
@@ -34,7 +36,7 @@ export function Home() {
     }, shapesRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [reduceMotion]);
 
   return (
     <GlassContainer className="relative z-10 min-h-[80vh] flex flex-col items-center justify-center">

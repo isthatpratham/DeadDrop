@@ -11,11 +11,13 @@ import type { FileInfo } from '../services/fileInfo';
 import { Logo } from '../components/Logo';
 import { parseContentDispositionFilename } from '../utils/contentDisposition';
 import { getApiErrorMessage } from '../utils/apiError';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 type PageStatus = 'loading' | 'valid' | 'password-required' | 'invalid' | 'expired' | 'error';
 
 export function Download() {
   const { id } = useParams<{ id: string }>();
+  const reduceMotion = usePrefersReducedMotion();
   const [status, setStatus] = useState<PageStatus>('loading');
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const [password, setPassword] = useState('');
@@ -195,6 +197,8 @@ export function Download() {
             </p>
             <div className="w-full max-w-sm flex flex-col gap-4">
               <GlassInput
+                id="download-password"
+                label="Password"
                 type="password"
                 placeholder="Enter password"
                 value={password}
@@ -207,6 +211,7 @@ export function Download() {
               <GlassButton
                 onClick={handleUnlock}
                 disabled={isDownloading}
+                aria-busy={isDownloading}
                 className="w-full flex items-center justify-center gap-2"
               >
                 {isDownloading ? 'Downloading...' : <><KeyRound className="w-4 h-4" /> Unlock and download</>}
@@ -228,11 +233,13 @@ export function Download() {
               <Logo size="medium" variant="with-text" className="mb-6" />
               <div className="w-24 h-24 rounded-full bg-emerald-100/50 flex items-center justify-center mb-6 shadow-glass border border-emerald-200/50 relative">
                 <FileText className="w-12 h-12 text-emerald-700 absolute" strokeWidth={1} />
+                {!reduceMotion && (
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
                   className="w-full h-full rounded-full border-2 border-dashed border-emerald-500/30"
                 />
+                )}
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-gray-900 px-6 text-center drop-shadow-sm">
                 {fileInfo?.originalName || 'Temporary file'}
@@ -269,6 +276,7 @@ export function Download() {
                 variant="secondary"
                 onClick={executeDownload}
                 disabled={isDownloading}
+                aria-busy={isDownloading}
                 className={`w-full py-5 text-lg font-bold flex items-center justify-center gap-3 transition-all duration-300 shadow-xl ${
                   isDownloading ? 'bg-black/40 cursor-wait transform-none' : 'hover:-translate-y-1 hover:shadow-2xl'
                 }`}
