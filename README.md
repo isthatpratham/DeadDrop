@@ -345,9 +345,9 @@ React 19 + Vite + React Router (declarative `BrowserRouter`). Axios calls `/api`
 
 ```mermaid
 flowchart LR
-    Home[/] --> Upload[/upload]
-    Upload --> Result[/result/:id]
-    Result --> Download[/download/:id]
+    Home["/"] --> Upload["/upload"]
+    Upload --> Result["/result/:id"]
+    Result --> Download["/download/:id"]
     Home --> Download
 ```
 
