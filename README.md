@@ -296,6 +296,7 @@ A row is eligible when it is expired **or** exhausted, **and** it was not reserv
 
 After database cleanup, `reconcileStorageDirectory` deletes files in `UPLOAD_DIR` that are not referenced by any row and are older than 15 minutes (so an in-progress multer write is not removed).
 
+
 ```mermaid
 stateDiagram-v2
     [*] --> OnDisk: multer writes file
